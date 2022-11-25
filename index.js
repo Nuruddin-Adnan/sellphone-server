@@ -15,7 +15,6 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.udttjtr.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-
 // JWT token varification
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -43,7 +42,7 @@ async function run() {
             const query = { email: email };
             const user = await usersCollection.findOne(query);
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '10d' })
                 return res.send({ accessToken: token })
             }
             res.status(403).send({ accessToken: '' })
@@ -83,9 +82,16 @@ async function run() {
         ***/
 
         app.get('/users', async (req, res) => {
+            const email = req.query.email;
             let query = {}
-            const users = await usersCollection.find(query).toArray();
-            res.send(users)
+            if (email) {
+                query = { email: email };
+                const users = await usersCollection.find(query).toArray();
+                res.send(users)
+            } else {
+                const users = await usersCollection.find(query).toArray();
+                res.send(users)
+            }
         })
 
         app.post('/users', async (req, res) => {
@@ -94,6 +100,7 @@ async function run() {
             res.send(result)
         })
 
+        // Check the user is admin or not
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email };
@@ -101,14 +108,27 @@ async function run() {
             res.send({ isAdmin: user?.role === 'admin' });
         })
 
-        app.put('/users/admin/:id', verifyJWT, async (req, res) => {
-            const decodedEmail = req.decoded.email;
-            const query = { email: decodedEmail };
-            const user = await usersCollection.findOne(query);
+        app.get('/users/allBuyers', verifyJWT, verifyAdmin, async (req, res) => {
+            const filter = { role: 'user' };
+            const user = await usersCollection.find(filter).toArray();
+            res.send(user);
+        })
 
-            if (user?.role !== 'admin') {
-                return res.status(403).send({ message: 'forbidden access' })
-            }
+        app.get('/users/allSellers', verifyJWT, verifyAdmin, async (req, res) => {
+            const filter = { role: 'seller' };
+            const user = await usersCollection.find(filter).toArray();
+            res.send(user);
+        })
+
+        app.delete('/users/delete/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) };
+            const user = await usersCollection.find(filter).toArray();
+            res.send(user);
+        })
+
+        // make admin by another admin
+        app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
 
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
