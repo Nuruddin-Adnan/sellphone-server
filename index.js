@@ -36,6 +36,7 @@ function verifyJWT(req, res, next) {
 async function run() {
     try {
         const usersCollection = client.db('sellphone').collection('users');
+        const categoriesCollection = client.db('sellphone').collection('categories');
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -136,18 +137,25 @@ async function run() {
         })
 
         // make admin by another admin
-        app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
+        // app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
 
-            const id = req.params.id;
-            const filter = { _id: ObjectId(id) };
-            const options = { upsert: true };
-            const updatedDoc = {
-                $set: {
-                    role: 'admin'
-                }
-            }
-            const result = await usersCollection.updateOne(filter, updatedDoc, options);
-            res.send(result);
+        //     const id = req.params.id;
+        //     const filter = { _id: ObjectId(id) };
+        //     const options = { upsert: true };
+        //     const updatedDoc = {
+        //         $set: {
+        //             role: 'admin'
+        //         }
+        //     }
+        //     const result = await usersCollection.updateOne(filter, updatedDoc, options);
+        //     res.send(result);
+        // });
+
+        // get all the categories 
+        app.get('/categories', async (req, res) => {
+            const query = {};
+            const categories = await categoriesCollection.find(query).toArray();
+            res.send(categories)
         })
 
     }
