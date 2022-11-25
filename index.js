@@ -108,6 +108,14 @@ async function run() {
             res.send({ isAdmin: user?.role === 'admin' });
         })
 
+        // Check the user is seller or not
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user?.role === 'seller' });
+        })
+
         app.get('/users/allBuyers', verifyJWT, verifyAdmin, async (req, res) => {
             const filter = { role: 'user' };
             const user = await usersCollection.find(filter).toArray();
@@ -123,8 +131,8 @@ async function run() {
         app.delete('/users/delete/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id
             const filter = { _id: ObjectId(id) };
-            const user = await usersCollection.find(filter).toArray();
-            res.send(user);
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result);
         })
 
         // make admin by another admin
