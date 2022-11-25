@@ -61,6 +61,18 @@ async function run() {
             next();
         }
 
+        // NOTE: make sure you use verifySeller after verifyJWT
+        const verifySeller = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await usersCollection.findOne(query);
+
+            if (user?.role !== 'seller') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            next();
+        }
+
         /***
         * API Naming Convention 
         * app.get('/bookings')
