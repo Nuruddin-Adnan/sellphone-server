@@ -37,6 +37,7 @@ async function run() {
     try {
         const usersCollection = client.db('sellphone').collection('users');
         const categoriesCollection = client.db('sellphone').collection('categories');
+        const productsCollection = client.db('sellphone').collection('products');
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -156,6 +157,13 @@ async function run() {
             const query = {};
             const categories = await categoriesCollection.find(query).toArray();
             res.send(categories)
+        })
+
+        // add product
+        app.post('/products', async (req, res) => {
+            const product = req.body;
+            const result = await productsCollection.insertOne(product);
+            res.send(result)
         })
 
     }
