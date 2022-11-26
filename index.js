@@ -74,15 +74,6 @@ async function run() {
             next();
         }
 
-        /***
-        * API Naming Convention 
-        * app.get('/bookings')
-        * app.get('/bookings/:id')
-        * app.post('/bookings')
-        * app.patch('/bookings/:id')
-        * app.delete('/bookings/:id')
-        ***/
-
         app.get('/users', async (req, res) => {
             const email = req.query.email;
             let query = {}
@@ -159,12 +150,48 @@ async function run() {
             res.send(categories)
         })
 
+        // get products for a seller by email
+        app.get('/products/seller/:email', verifyJWT, verifySeller, async (req, res) => {
+            const email = req.params.email;
+            const query = { seller: email };
+            const products = await productsCollection.find(query).toArray();
+            res.send(products)
+        })
+
         // add product
         app.post('/products', verifyJWT, verifySeller, async (req, res) => {
             const product = req.body;
             const result = await productsCollection.insertOne(product);
             res.send(result)
         })
+
+
+
+
+        app.delete('/products/delete/:id', verifyJWT, verifySeller, async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) };
+            const result = await productsCollection.deleteOne(filter);
+            res.send(result);
+        })
+
+
+        // product advertisement;
+        app.put('/products/advertise', async (req, res) => {
+            const id = req.query.id;
+            const advertisement = req.query.advertisement
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    advertisement: advertisement
+                }
+            }
+            const result = await productsCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
 
     }
     finally {
