@@ -162,6 +162,14 @@ async function run() {
             }
         })
 
+        // get all product under a category NOTE: Category name sould be uniq
+        app.get('/products/category/:name', async (req, res) => {
+            const category = req.params.name;
+            const query = { category: category };
+            const products = await productsCollection.find(query).toArray();
+            res.send(products);
+        })
+
         // get products for a seller by email
         app.get('/products/seller/:email', verifyJWT, verifySeller, async (req, res) => {
             const email = req.params.email;
