@@ -128,6 +128,19 @@ async function run() {
             res.send(result);
         })
 
+        app.put('/users/varify/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    varified: true
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
         // get all the categories 
         app.get('/categories', async (req, res) => {
             const query = {};
@@ -175,7 +188,7 @@ async function run() {
         // Get advertised product
         app.get('/products/advertise', async (req, res) => {
             const query = { advertisement: 'advertised' };
-            const product = await productsCollection.find(query).sort({ "publishedDate": -1 }).toArray();
+            const product = await productsCollection.find(query).toArray();
             res.send(product)
         })
 
