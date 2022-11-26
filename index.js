@@ -139,8 +139,14 @@ async function run() {
         // get all product
         app.get('/products', async (req, res) => {
             const query = {};
-            const product = await productsCollection.find(query).sort({ "publishedDate": -1 }).toArray();
-            res.send(product)
+            if (req.query.limit) {
+                const limit = parseInt(req.query.limit);
+                const product = await productsCollection.find(query).sort({ "publishedDate": -1 }).limit(limit).toArray();
+                res.send(product)
+            } else {
+                const product = await productsCollection.find(query).sort({ "publishedDate": -1 }).toArray();
+                res.send(product)
+            }
         })
 
         // get products for a seller by email
