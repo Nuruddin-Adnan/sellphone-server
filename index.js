@@ -128,21 +128,6 @@ async function run() {
             res.send(result);
         })
 
-        // make admin by another admin
-        // app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
-
-        //     const id = req.params.id;
-        //     const filter = { _id: ObjectId(id) };
-        //     const options = { upsert: true };
-        //     const updatedDoc = {
-        //         $set: {
-        //             role: 'admin'
-        //         }
-        //     }
-        //     const result = await usersCollection.updateOne(filter, updatedDoc, options);
-        //     res.send(result);
-        // });
-
         // get all the categories 
         app.get('/categories', async (req, res) => {
             const query = {};
@@ -150,11 +135,19 @@ async function run() {
             res.send(categories)
         })
 
+
+        // get all product
+        app.get('/products', async (req, res) => {
+            const query = {};
+            const product = await productsCollection.find(query).sort({ "publishedDate": -1 }).toArray();
+            res.send(product)
+        })
+
         // get products for a seller by email
         app.get('/products/seller/:email', verifyJWT, verifySeller, async (req, res) => {
             const email = req.params.email;
             const query = { seller: email };
-            const products = await productsCollection.find(query).toArray();
+            const products = await productsCollection.find(query).sort({ "publishedDate": -1 }).toArray();
             res.send(products)
         })
 
@@ -165,9 +158,6 @@ async function run() {
             res.send(result)
         })
 
-
-
-
         app.delete('/products/delete/:id', verifyJWT, verifySeller, async (req, res) => {
             const id = req.params.id
             const filter = { _id: ObjectId(id) };
@@ -176,7 +166,15 @@ async function run() {
         })
 
 
-        // product advertisement;
+        // Get advertised product
+        app.get('/products/advertise', async (req, res) => {
+            const query = { advertisement: 'advertised' };
+            const product = await productsCollection.find(query).sort({ "publishedDate": -1 }).toArray();
+            res.send(product)
+        })
+
+
+        // make product advertisement;
         app.put('/products/advertise', async (req, res) => {
             const id = req.query.id;
             const advertisement = req.query.advertisement
@@ -189,7 +187,6 @@ async function run() {
             }
             const result = await productsCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
-
         });
 
 
