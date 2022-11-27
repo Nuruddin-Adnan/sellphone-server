@@ -150,6 +150,23 @@ async function run() {
         })
 
 
+        // get category by  category id
+        app.get('/categories/id/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const category = await categoriesCollection.findOne(query);
+            res.send(category)
+        })
+
+        // get category by  category name
+        app.get('/categories/:name', async (req, res) => {
+            const name = req.params.name;
+            const query = { name: name };
+            const category = await categoriesCollection.findOne(query);
+            res.send(category)
+        })
+
+
         // get all product
         app.get('/products', async (req, res) => {
             const query = {};
@@ -163,10 +180,23 @@ async function run() {
             }
         })
 
-        // get all product under a category NOTE: Category name sould be uniq
-        app.get('/products/category/:name', async (req, res) => {
-            const category = req.params.name;
-            const query = { category: category };
+        // get all available product;
+        app.get('/products/available', async (req, res) => {
+            const query = { status: 'available' };
+            if (req.query.limit) {
+                const limit = parseInt(req.query.limit);
+                const product = await productsCollection.find(query).sort({ "publishedDate": -1 }).limit(limit).toArray();
+                res.send(product)
+            } else {
+                const product = await productsCollection.find(query).sort({ "publishedDate": -1 }).toArray();
+                res.send(product)
+            }
+        })
+
+        // get all product under a category
+        app.get('/products/category/:id', async (req, res) => {
+            const category = req.params.id;
+            const query = { category: category, status: 'available' };
             const products = await productsCollection.find(query).toArray();
             res.send(products);
         })
@@ -217,7 +247,24 @@ async function run() {
             res.send(result);
         });
 
-        // add to order collection;
+
+        // get order based on user and based on productId(optional)
+        app.get('/orders/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email
+            const productId = req.query.productId;
+
+            if (productId) {
+                const query = { user: email, productId: productId };
+                const result = await ordersCollection.find(query).toArray();
+                res.send(result);
+            } else {
+                const query = { user: email };
+                const result = await ordersCollection.find(query).toArray();
+                res.send(result);
+            }
+        })
+
+        // add order data to order collection;
         app.post('/orders', verifyJWT, async (req, res) => {
             const order = req.body;
             const result = await ordersCollection.insertOne(order);
