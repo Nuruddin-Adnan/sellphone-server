@@ -216,7 +216,16 @@ async function run() {
             res.send(result)
         })
 
+        // Delete a product by seller
         app.delete('/products/delete/:id', verifyJWT, verifySeller, async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) };
+            const result = await productsCollection.deleteOne(filter);
+            res.send(result);
+        })
+
+        // reported product delete by admin
+        app.delete('/products/reported/delete/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id
             const filter = { _id: ObjectId(id) };
             const result = await productsCollection.deleteOne(filter);
@@ -231,6 +240,12 @@ async function run() {
             res.send(product)
         })
 
+        // Get reported product
+        app.get('/products/reported', verifyJWT, verifyAdmin, async (req, res) => {
+            const query = { report: true };
+            const products = await productsCollection.find(query).toArray();
+            res.send(products)
+        })
 
         // make product advertisement;
         app.put('/products/advertise', async (req, res) => {
@@ -241,6 +256,20 @@ async function run() {
             const updatedDoc = {
                 $set: {
                     advertisement: advertisement
+                }
+            }
+            const result = await productsCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
+
+        // Report a product;
+        app.put('/products/report/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    report: true
                 }
             }
             const result = await productsCollection.updateOne(filter, updatedDoc, options);
