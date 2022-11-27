@@ -151,7 +151,7 @@ async function run() {
 
 
         // get category by  category id
-        app.get('/categories/id/:id', async (req, res) => {
+        app.get('/categories/catId/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const category = await categoriesCollection.findOne(query);
@@ -248,7 +248,7 @@ async function run() {
         })
 
         // make product advertisement;
-        app.put('/products/advertise', async (req, res) => {
+        app.put('/products/advertise', verifyJWT, verifySeller, async (req, res) => {
             const id = req.query.id;
             const advertisement = req.query.advertisement
             const filter = { _id: ObjectId(id) };
@@ -270,6 +270,20 @@ async function run() {
             const updatedDoc = {
                 $set: {
                     report: true
+                }
+            }
+            const result = await productsCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
+
+        // Report a product;
+        app.put('/products/reported/remove/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    report: false
                 }
             }
             const result = await productsCollection.updateOne(filter, updatedDoc, options);
