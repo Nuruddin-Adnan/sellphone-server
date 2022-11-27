@@ -38,6 +38,7 @@ async function run() {
         const usersCollection = client.db('sellphone').collection('users');
         const categoriesCollection = client.db('sellphone').collection('categories');
         const productsCollection = client.db('sellphone').collection('products');
+        const ordersCollection = client.db('sellphone').collection('orders');
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -215,6 +216,13 @@ async function run() {
             const result = await productsCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         });
+
+        // add to order collection;
+        app.post('/orders', verifyJWT, async (req, res) => {
+            const order = req.body;
+            const result = await ordersCollection.insertOne(order);
+            res.send(result)
+        })
 
 
     }
