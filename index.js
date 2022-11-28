@@ -290,6 +290,20 @@ async function run() {
             res.send(result);
         });
 
+        // Order satus update after complete the payment
+        app.put('/products/status/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    status: 'sold'
+                }
+            }
+            const result = await productsCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
 
         // get order based on user and based on productId(optional)
         app.get('/orders/:email', verifyJWT, async (req, res) => {
@@ -320,6 +334,20 @@ async function run() {
             const query = { _id: ObjectId(id) }
             const result = await ordersCollection.deleteOne(query);
             res.send(result)
+        })
+
+        // Order payment status update;
+        app.put('/orders/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    paymentStatus: 'paid'
+                }
+            }
+            const result = await ordersCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
         })
 
 
