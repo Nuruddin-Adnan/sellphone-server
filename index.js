@@ -305,6 +305,14 @@ async function run() {
         })
 
 
+        // get order based on order id
+        app.get('/orders/payment/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) };
+            const result = await ordersCollection.findOne(query);
+            res.send(result);
+        })
+
         // get order based on user and based on productId(optional)
         app.get('/orders/:email', verifyJWT, async (req, res) => {
             const email = req.params.email
